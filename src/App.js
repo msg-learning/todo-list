@@ -1,26 +1,54 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+// External
+import React, { Fragment, useEffect } from 'react';
+import { connect } from 'react-redux';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+// Application
+import Todo from './Todo.js';
+import Form from './TodoForm.js';
 
-export default App;
+import { save, remove, done, load } from './reducers/index.js';
+
+
+const App = ( { todos, done, load, isLoading, add, remove } ) => {
+
+    useEffect( () => {
+        load();
+    }, [] );
+
+    return isLoading
+        ? <div>Loading</div>
+        : (
+            <Fragment>
+
+                <ol>
+                    { todos.map( todo => (
+                        <Todo
+                            key={ todo.id }
+                            onDelete={ remove } 
+                            onDone={ done }
+                            { ...todo }
+                        />
+                    ) ) }
+                </ol>
+
+                <Form onSubmit={add} />
+            </Fragment>
+        );
+};
+
+const mapStateToProps = state => ( {
+    todos: state.todo.list,
+    loading: state.todo.isLoading
+} );
+
+const mapDispatchToProps = dispatch => ( {
+    done: id => dispatch( done( id ) ),
+    load: () => dispatch( load() ),
+    add: todo => dispatch( save( todo ) ),
+    remove: id => dispatch( remove( id ) )
+} );
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)( App );
